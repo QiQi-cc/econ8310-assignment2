@@ -1,13 +1,13 @@
 # assignment2.py
 # ------------------------------------------------------------
-# Random Forest Model - Local Version for Autograder
+# Final Random Forest Model for GitHub Classroom Autograder
 # ------------------------------------------------------------
 
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 
-# ------------------ Load Data ------------------
+# ------------------ Load local CSVs ------------------
 train = pd.read_csv("assignment2train.csv")
 test = pd.read_csv("assignment2test.csv")
 
@@ -20,15 +20,15 @@ def feature_engineer(df):
         df["hour"] = dt.dt.hour
         df["dow"] = dt.dt.dayofweek
         df["month"] = dt.dt.month
-    for col in ["id", "DateTime"]:
-        if col in df.columns:
-            df.drop(columns=col, inplace=True)
+    for c in ["id", "DateTime"]:
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
     return df
 
 train = feature_engineer(train)
 test = feature_engineer(test)
 
-# ------------------ Split Features and Target ------------------
+# ------------------ Split target ------------------
 y = train["meal"].astype(int)
 X = train.drop(columns=["meal"])
 
@@ -36,24 +36,35 @@ X = train.drop(columns=["meal"])
 imputer = SimpleImputer(strategy="most_frequent")
 X_imputed = imputer.fit_transform(X)
 
-# ------------------ Define Model (Required Name) ------------------
-def model(random_state=42):
-    return RandomForestClassifier(
-        n_estimators=300,
-        random_state=random_state,
-        n_jobs=-1,
-        class_weight="balanced_subsample"
-    )
+# ------------------ Define unfitted model ------------------
+model = RandomForestClassifier(
+    n_estimators=500,
+    max_features="sqrt",
+    min_samples_leaf=2,
+    random_state=42,
+    n_jobs=-1
+)
 
-# ------------------ Fit Model (Required Name) ------------------
-modelFit = model()
+# ------------------ Fit model ------------------
+modelFit = RandomForestClassifier(
+    n_estimators=500,
+    max_features="sqrt",
+    min_samples_leaf=2,
+    random_state=42,
+    n_jobs=-1
+)
 modelFit.fit(X_imputed, y)
 
-# ------------------ Predict (Required Name) ------------------
+# ------------------ Predict ------------------
 for col in X.columns:
     if col not in test.columns:
         test[col] = 0
 test = test[X.columns]
 
 X_test = imputer.transform(test)
-pred = pd.Series(modelFit.predict(X_test), name="pred")
+pred = modelFit.predict(X_test)
+
+# Fix dtype issue: convert np.int64 → Python int
+pred = [int(x) for x in pred]
+
+
