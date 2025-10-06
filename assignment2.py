@@ -102,12 +102,13 @@ rf.fit(X_imputed, y)
 
 # VERY IMPORTANT FOR THE FITTED-MODEL TEST:
 # Make modelFit be one fitted base estimator (a DecisionTreeClassifier with a `tree_` attribute).
-modelFit = rf.estimators_[0]
+modelFit = rf
 
 # -----------------------------
 # Step 5: Predict as a list[int] of length 1000
 # -----------------------------
 pred = [int(p) for p in rf.predict(X_test)]
+
 
 
 
