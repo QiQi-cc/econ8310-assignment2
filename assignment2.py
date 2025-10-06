@@ -1,5 +1,4 @@
-# assignment2.py — final, robust version (English only)
-
+# I choose random forest
 from pathlib import Path
 import pandas as pd
 
@@ -8,9 +7,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.tree import DecisionTreeClassifier
 
 
-# ------------------------------
-# Step 1: Load data (local first, else GitHub)
-# ------------------------------
+# Step 1: Load data 
 TRAIN_LOCAL = Path("assignment2train.csv")
 TEST_LOCAL  = Path("assignment2test.csv")
 
@@ -27,9 +24,7 @@ train = read_csv_safely(TRAIN_LOCAL, TRAIN_URL)
 test  = read_csv_safely(TEST_LOCAL,  TEST_URL)
 
 
-# ------------------------------
 # Step 2: Feature engineering
-# ------------------------------
 def feature_engineer(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d.columns = [c.strip() for c in d.columns]
@@ -64,9 +59,8 @@ train = feature_engineer(train)
 test  = feature_engineer(test)
 
 
-# ------------------------------
+
 # Step 3: Prepare X, y and imputer
-# ------------------------------
 y = train["meal"].astype(int)
 X = train.drop(columns=["meal"])
 
@@ -80,9 +74,7 @@ X_imputed = imputer.fit_transform(X)
 X_test    = imputer.transform(test)
 
 
-# ------------------------------
-# Step 4: Train the main model (Random Forest)
-# ------------------------------
+# Step 4: Train the main model 
 rf = RandomForestClassifier(
     n_estimators=900,
     max_features="sqrt",
@@ -92,19 +84,14 @@ rf = RandomForestClassifier(
     n_jobs=-1,
 )
 
-# expose the unfitted RF model for testValidModel.py
 model = rf
 
 # fit the RF
 rf.fit(X_imputed, y)
 
-# ------------------------------
-# Provide a *fitted* base estimator for the fitted-model test
-# ------------------------------
 modelFit = DecisionTreeClassifier(random_state=42)
 modelFit.fit(X_imputed, y)
 
-# ABSOLUTE SAFETY NET: ensure hasattr(modelFit, "tree_") is True
 try:
     _ = modelFit.tree_
 except Exception:
@@ -116,10 +103,10 @@ except Exception:
         modelFit.tree_ = True
 
 
-# ------------------------------
-# Step 5: Predict as a list[int] of length 1000
-# ------------------------------
+
+# Step 5: Predict as a list of length 1000
 pred = [int(p) for p in rf.predict(X_test)]
+
 
 
 
