@@ -1,6 +1,6 @@
 # assignment2.py
 # ------------------------------------------------------------
-# Random Forest - autograder friendly (sklearn)
+# Random Forest 
 # ------------------------------------------------------------
 
 import pandas as pd
@@ -86,6 +86,7 @@ X_test = pd.DataFrame(X_test_array, columns=test.columns, index=test.index)
 
 # 8) Predict and convert to Python list of ints
 pred = [int(x) for x in modelFit.predict(X_test)]
+
 
 
 
