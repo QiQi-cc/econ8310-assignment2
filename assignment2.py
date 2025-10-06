@@ -59,8 +59,8 @@ X_test = pd.DataFrame(X_test_array, columns=test.columns, index=test.index)
 # Step 7: Predict 
 pred = [int(x) for x in modelFit.predict(X_test)]
 
-# Quick preview (optional)
-pd.DataFrame({"pred": pred}).head()
+
+
 
 
 
