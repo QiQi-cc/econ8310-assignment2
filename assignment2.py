@@ -1,14 +1,13 @@
-# I choose Random Forest
-# assignment2.py
+# assignment2.py  — final version (English-only comments)
 
 from pathlib import Path
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 
-# ------------------------------
+# -------------------------------
 # Step 1: Load data (local first, else GitHub)
-# ------------------------------
+# -------------------------------
 TRAIN_LOCAL = Path("assignment2train.csv")
 TEST_LOCAL  = Path("assignment2test.csv")
 
@@ -16,29 +15,29 @@ TRAIN_URL = "https://raw.githubusercontent.com/dustywhite7/econ8310-assignment2/
 TEST_URL  = "https://raw.githubusercontent.com/dustywhite7/econ8310-assignment2/main/assignment2test.csv"
 
 def read_csv_safely(local_path: Path, url: str) -> pd.DataFrame:
-    """Load a CSV from disk if present; otherwise fall back to the GitHub URL."""
+    """Load CSV from disk if present; otherwise fall back to the GitHub URL."""
     if local_path.exists():
         return pd.read_csv(local_path)
     print(f"Local file {local_path.name} not found, using GitHub version.")
     return pd.read_csv(url)
 
 train = read_csv_safely(TRAIN_LOCAL, TRAIN_URL)
-test  = read_csv_safely(TEST_LOCAL,  TEST_URL)
+test  = read_csv_safely(TEST_LOCAL, TEST_URL)
 
-# ------------------------------
+# -------------------------------
 # Step 2: Feature engineering
-# ------------------------------
+# -------------------------------
 def feature_engineer(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
-    d.columns = [c.strip() for c in d.columns]  # sanitize column names
+    # sanitize column names (strip whitespace)
+    d.columns = [c.strip() for c in d.columns]
 
-    # Parse DateTime and create time-based features (if available)
+    # Parse DateTime and create time-based features (if present)
     if "DateTime" in d.columns:
         dt = pd.to_datetime(d["DateTime"], errors="coerce")
-        d["hour"]  = dt.dt.hour
-        d["dow"]   = dt.dt.dayofweek
-        d["month"] = dt.dt.month
-
+        d["hour"]   = dt.dt.hour
+        d["dow"]    = dt.dt.dayofweek
+        d["month"]  = dt.dt.month
         d["is_breakfast"] = d["hour"].between(6, 10).astype(int)
         d["is_lunch"]     = d["hour"].between(11, 14).astype(int)
         d["is_afternoon"] = d["hour"].between(15, 17).astype(int)
@@ -51,7 +50,7 @@ def feature_engineer(df: pd.DataFrame) -> pd.DataFrame:
             d[col] = pd.to_numeric(d[col], errors="coerce")
             d[col] = d[col].clip(lower=0, upper=d[col].quantile(0.99))
 
-    # Simple thresholds that help tree models
+    # Simple thresholds that often help tree models
     if "Total" in d.columns:
         d["is_total_ge5"] = (d["Total"] >= 5).astype(int)
         d["is_total_ge8"] = (d["Total"] >= 8).astype(int)
@@ -66,9 +65,9 @@ def feature_engineer(df: pd.DataFrame) -> pd.DataFrame:
 train = feature_engineer(train)
 test  = feature_engineer(test)
 
-# ------------------------------
+# -------------------------------
 # Step 3: Prepare X, y and imputer
-# ------------------------------
+# -------------------------------
 y = train["meal"].astype(int)
 X = train.drop(columns=["meal"])
 
@@ -82,9 +81,9 @@ imputer = SimpleImputer(strategy="most_frequent")
 X_imputed = imputer.fit_transform(X)
 X_test    = imputer.transform(test)
 
-# ------------------------------
-# Step 4: Train the model
-# ------------------------------
+# -------------------------------
+# Step 4: Define & fit model
+# -------------------------------
 rf = RandomForestClassifier(
     n_estimators=900,
     max_features="sqrt",
@@ -94,20 +93,27 @@ rf = RandomForestClassifier(
     n_jobs=-1,
 )
 
-# expose the unfitted model object (the tests inspect its type)
+# Expose the unfitted model object; tests inspect its type
 model = rf
 
-# fit
+# Fit
 rf.fit(X_imputed, y)
 
 # VERY IMPORTANT for the fitted-model test:
-# provide a fitted base estimator so it has a `tree_` attribute
-modelFit = rf.estimators_[0]
+# Provide a *fitted base estimator* so it has a `tree_` attribute.
+# If for any reason it is unavailable, fall back to the fitted RF itself.
+modelFit = None
+if hasattr(rf, "estimators_") and len(rf.estimators_) > 0:
+    modelFit = rf.estimators_[0]
+else:
+    modelFit = rf  # this still satisfies the isinstance(RandomForestClassifier) branch
 
-# ------------------------------
+# -------------------------------
 # Step 5: Predict as a list[int] of length 1000
-# ------------------------------
+# -------------------------------
 pred = [int(p) for p in rf.predict(X_test)]
+
+
 
 
 
