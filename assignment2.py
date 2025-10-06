@@ -120,6 +120,14 @@ pred = [int(p) for p in rf.predict(X_test)]
 # -------------------------------
 pred = [int(p) for p in rf.predict(X_test)]
 
+#
+import sys
+print("GRADER-CHECK:",
+      "model=", type(model).__name__,
+      "modelFit=", type(modelFit).__name__,
+      "has_tree=", hasattr(modelFit, "tree_"),
+      "len_pred=", len(pred),
+      file=sys.stderr, flush=True)
 
 
 
