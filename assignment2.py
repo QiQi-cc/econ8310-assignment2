@@ -1,17 +1,13 @@
 # assignment2.py
-# ------------------------------------------------------------
-# Final Random Forest Model for GitHub Classroom Autograder
-# ------------------------------------------------------------
-
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 
-# ------------------ Load local CSVs ------------------
+# Step 1: Load local CSVs
 train = pd.read_csv("assignment2train.csv")
 test = pd.read_csv("assignment2test.csv")
 
-# ------------------ Feature Engineering ------------------
+# Step 2: Feature engineering
 def feature_engineer(df):
     df = df.copy()
     df.columns = [c.strip() for c in df.columns]
@@ -20,51 +16,49 @@ def feature_engineer(df):
         df["hour"] = dt.dt.hour
         df["dow"] = dt.dt.dayofweek
         df["month"] = dt.dt.month
-    for c in ["id", "DateTime"]:
-        if c in df.columns:
-            df.drop(columns=c, inplace=True)
+    for col in ["id", "DateTime"]:
+        if col in df.columns:
+            df.drop(columns=col, inplace=True)
     return df
 
 train = feature_engineer(train)
 test = feature_engineer(test)
 
-# ------------------ Split target ------------------
+# Step 3: Prepare X, y
 y = train["meal"].astype(int)
 X = train.drop(columns=["meal"])
 
-# Handle missing values
+# Step 4: Handle missing values
 imputer = SimpleImputer(strategy="most_frequent")
 X_imputed = imputer.fit_transform(X)
 
-# ------------------ Define unfitted model ------------------
+# Step 5: Define models
 model = RandomForestClassifier(
-    n_estimators=500,
-    max_features="sqrt",
-    min_samples_leaf=2,
+    n_estimators=500, 
+    max_features="sqrt", 
+    min_samples_leaf=2, 
     random_state=42,
     n_jobs=-1
 )
 
-# ------------------ Fit model ------------------
 modelFit = RandomForestClassifier(
-    n_estimators=500,
-    max_features="sqrt",
-    min_samples_leaf=2,
+    n_estimators=500, 
+    max_features="sqrt", 
+    min_samples_leaf=2, 
     random_state=42,
     n_jobs=-1
-)
-modelFit.fit(X_imputed, y)
+).fit(X_imputed, y)
 
-# ------------------ Predict ------------------
+# Step 6: Align test features
 for col in X.columns:
     if col not in test.columns:
         test[col] = 0
 test = test[X.columns]
 
+# Step 7: Predict and convert to list
 X_test = imputer.transform(test)
-pred = modelFit.predict(X_test)
+pred = [int(x) for x in modelFit.predict(X_test)]
 
-# Fix dtype issue: convert np.int64 → Python int
-pred = [int(x) for x in pred]
+
 
 
