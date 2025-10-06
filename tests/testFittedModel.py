@@ -5,7 +5,8 @@ import pandas as pd
 import numpy as np
 import sklearn
 import statsmodels.discrete.discrete_model as dm
-from sklearn.ensembles import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
+
 
 # Import your code from parent directory
 import os
